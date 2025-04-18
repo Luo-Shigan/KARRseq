@@ -15,9 +15,17 @@ from pyfaidx import Fasta
 import matplotlib.pyplot as plt
 from .utils_suboptimal_structure import get_matrix, get_bppm
 
-proj_dir = ""
+
 
 def parse_structure(f_structure, p_res, p_display):
+    """
+    ​功能: 解析RNA二级结构文件, 生成接触矩阵\n
+    ​参数:
+        f_structure: 结构文件路径
+        p_res: 分辨率(每个bin包含的碱基数)
+        p_display: 显示模式("full", "lower"或"upper")\n
+    ​返回值: 表示RNA二级结构接触的矩阵 
+    """
     struct = ""
     with open(f_structure, "r") as f:
         for line in f:
@@ -40,6 +48,12 @@ def parse_structure(f_structure, p_res, p_display):
     return data
 
 def get_size(f_size):
+    """
+    ​功能: 从染色体大小文件中读取染色体名称和大小\n
+    ​参数: 
+        f_size: 染色体大小文件路径\n
+    ​返回值: 字典{染色体名: 大小}
+    """
     sizes = {}
     with open(f_size, "r") as f:
         for line in f:
@@ -48,6 +62,12 @@ def get_size(f_size):
     return sizes
 
 def get_annotation(f_annotation):
+    """
+    ​功能: 从注释文件中获取基因注释信息\n
+    ​参数: 
+        f_annotation: 注释文件路径\n
+    ​返回值: 字典{基因ID: (起始位置, 结束位置)}
+    """
     annotations = {}
     with open(f_annotation, "r") as f:
         for line in f:
@@ -59,6 +79,12 @@ def get_annotation(f_annotation):
     return annotations
 
 def get_splice(f_bed12):
+    """
+    功能: 从BED12格式文件中获取剪接位点信息\n
+    ​参数: 
+        f_bed12: BED12文件路径\n
+    ​返回值: 字典{转录本ID: 剪接位点数组}
+    """
     splices = {}
     with open(f_bed12, "r") as f:
         for line in f:
@@ -75,6 +101,13 @@ def get_splice(f_bed12):
     return splices
 
 def get_longest_by_gene(f_index, gene):
+    """
+    功能: 获取基因的最长转录本信息\n
+    ​参数:
+        f_index: 索引文件路径
+        gene: 基因名称\n
+    ​返回值: (转录本ID, 起始位置, 结束位置)
+    """
     index = {}
     with open(f_index, "r") as f:
         for line in f:
@@ -93,6 +126,13 @@ def get_longest_by_gene(f_index, gene):
     return rid, start, end
 
 def get_by_rid(f_index, rid):
+    """
+    功能: 根据转录本ID获取其坐标信息\n
+    ​参数:
+        f_index: 索引文件路径
+        rid: 转录本ID\n
+    ​返回值: (起始位置, 结束位置)
+    """
     index = {}
     with open(f_index, "r") as f:
         for line in f:
@@ -109,7 +149,17 @@ def get_by_rid(f_index, rid):
 
 def load_loops(chrom, p_start, p_end, f_loop_path,
                p_resolution, p_point=False):
-
+    """
+    ​功能: 加载环状结构(loops)数据\n
+    ​参数:
+        chrom: 染色体名称
+        p_start: 起始位置
+        p_end: 结束位置
+        f_loop_path: loops文件路径
+        p_resolution: 分辨率
+        p_point: 是否作为点处理\n
+    ​返回值: loops列表
+    """
     loop = []
     with open(f_loop_path, "r") as f:
         for line in f:
@@ -156,55 +206,86 @@ def tabulate(data, f_pair, loci, p_start1, p_start2,
              p_end1, p_end2,
              p_chrom1, p_chrom2, p_resolution,
              p_downsample=1.0):
-
+    """
+    ## ​功能: 从pairix格式文件中统计接触频率\n
+    ## 参数:
+    - data: 预初始化的零矩阵，用于存储结果
+    - f_pair: pairix 格式的 Hi-C 数据文件路径
+    - loci: 查询的基因组区域列表
+    - p_start1/2, p_end1/2: 区域起止位置
+    - p_chrom1/2: 染色体名称
+    - p_resolution: 分析分辨率 (bin 大小) 
+    - p_downsample: 下采样比例 (默认1.0, 即不降采样）
+    ## ​返回值: 
+    填充后的接触矩阵
+    """
+ # 设置随机种子以确保可重复的下采样
     np.random.seed(386)
 
+    # 遍历每个查询区域（loci可能包含多个区域）
     for no, locus in enumerate(loci):
 
+        # 打开pairix文件并获取指定区域的迭代器
         pairs = pypairix.open(f_pair)
-        iterator = pairs.querys2D(locus)
+        iterator = pairs.querys2D(locus)  # 获取该区域的所有接触对
 
+        # 遍历每个接触对
         for row in iterator:
 
+            # 下采样：随机跳过部分数据（默认100%保留）
             if np.random.random() > p_downsample:
                 continue
 
+            # 解析接触对的两个坐标信息
             chrom1, start1, chrom2, start2 = (row[1], int(row[2]),
                                               row[3], int(row[4]))
 
+            # 分支1：处理两个独立定义区域的接触（例如不同染色体）
             if p_start1 and p_end1 and p_start2 and p_end2:
-                binth1 = (start1-p_start1)//p_resolution
-                binth2 = (start2-p_start2)//p_resolution
-
+                # 计算bin索引（基于各自区域的起始位置）
+                binth1 = (start1 - p_start1) // p_resolution
+                binth2 = (start2 - p_start2) // p_resolution
+                # 非对称填充（仅单方向）
                 data[binth1][binth2] += 1
 
+            # 分支2：处理单一定义区域内的接触（例如同一染色体内）
             elif p_start1 and p_end1:
-                binth1 = (start1-p_start1)//p_resolution
-                binth2 = (start2-p_start1)//p_resolution
-
+                # 计算bin索引（基于同一区域的起始位置）
+                binth1 = (start1 - p_start1) // p_resolution
+                binth2 = (start2 - p_start1) // p_resolution
+                # 对称填充（交互是双向的）
                 data[binth1][binth2] += 1
                 data[binth2][binth1] += 1
 
+            # 分支3：处理跨染色体且需要翻转坐标的情况
             elif p_chrom1 and p_chrom2:  # flip
-
-                binth1 = start1//p_resolution
-                binth2 = start2//p_resolution
-
+                # 直接按分辨率计算bin（假设全局坐标）
+                binth1 = start1 // p_resolution
+                binth2 = start2 // p_resolution
+                # 根据遍历的locus序号决定填充方向
                 if no == 0:
                     data[binth1][binth2] += 1
                 elif no == 1:
                     data[binth2][binth1] += 1
 
+            # 分支4：处理单染色体内的全局统计
             elif p_chrom1:
-                binth1 = start1//p_resolution
-                binth2 = start2//p_resolution
-
+                # 直接按分辨率计算bin
+                binth1 = start1 // p_resolution
+                binth2 = start2 // p_resolution
+                # 对称填充
                 data[binth1][binth2] += 1
                 data[binth2][binth1] += 1
 
     return data
 
 def normalize_by_diag(X):
+    """
+    ​功能: 按对角线距离对接触矩阵进行归一化\n
+    ​参数: 
+        X: 原始接触矩阵\n
+    ​返回值: 归一化后的矩阵
+    """
     pseudocount = 1e-10
     N = np.zeros(X.shape)
     for i in range(X.shape[0]):
@@ -215,6 +296,13 @@ def normalize_by_diag(X):
     return N
 
 def normalize_diff(X0, X1):
+    """
+    ​功能: 计算两个接触矩阵的差异并归一化\n
+    ​参数:
+        X0: 第一个矩阵
+        X1: 第二个矩阵\n
+    ​返回值: 归一化后的差异矩阵
+    """
     pseudocount = 1e-10
     Xm = (X0 + X1)/2
     Xd = X0 - X1
@@ -229,10 +317,21 @@ def normalize_diff(X0, X1):
     return N
 
 def get_ref(p_genome):
-    dict_sizes = {"mm10": proj_dir + "data/reference/mm10/mm10_refseq.sizes",
-                  "hg19": proj_dir + "data/reference/hg19/hg19_refseq_wo_version.sizes"}
-    dict_fasta = {"mm10": proj_dir + "data/reference/mm10/mm10.fa",
-                  "hg19": proj_dir + "data/reference/hg19/hg19_refseq_wo_version.fasta"}
+    """
+    ​功能: 根据基因组版本获取染色体大小文件和fasta文件路径\n
+    ​参数: 
+        p_genome: 基因组版本(如"mm10", "hg19")\n
+    ​返回值: (染色体大小文件路径, fasta文件路径)
+    """
+    proj_dir = ""
+    dict_sizes = {"mm10": proj_dir + "/ChIP_seq_2/Data/index/Mus_musculus/NCBI/GRCm38.p6/mm10refseq_wo_version.fa.fai",
+                  "hg19": proj_dir + "/ChIP_seq_2/Data/index/Homo_sapiens/NCBI/GRCh37.p13/hrefseq_wo_version.fa.fai",
+                  "GRCm39": proj_dir + "/ChIP_seq_2/Data/index/Mus_musculus/GENCODE/GRCm39/GRCm39.primary_assembly.genome.fa.fai",
+                  "GRCh38": proj_dir + "/ChIP_seq_2/Data/index/Homo_sapiens/GENCODE/GRCh38/GRCh38.primary_assembly.genome.fa.fai"}
+    dict_fasta = {"mm10": proj_dir + "/ChIP_seq_2/Data/index/Mus_musculus/NCBI/GRCm38.p6/mm10refseq_wo_version.fa",
+                  "hg19": proj_dir + "/ChIP_seq_2/Data/index/Homo_sapiens/NCBI/GRCh37.p13/hrefseq_wo_version.fa",
+                  "GRCm39": proj_dir + "/ChIP_seq_2/Data/index/Mus_musculus/GENCODE/GRCm39/GRCm39.primary_assembly.genome.fa",
+                  "GRCh38": proj_dir + "/ChIP_seq_2/Data/index/Homo_sapiens/GENCODE/GRCh38/GRCh38.primary_assembly.genome.fa"}
     try:
         f_size = dict_sizes[p_genome]
         f_fasta = dict_fasta[p_genome]
@@ -245,7 +344,19 @@ def get_loci(p_chrom1=None, p_chrom2=None,
              p_start1=None, p_start2=None,
              p_end1=None, p_end2=None, p_gene1=None, p_gene2=None,
              p_resolution=100, p_genome=None, f_size=None, f_index=None, **kwargs):
-
+    """
+    ​功能: 根据输入参数生成查询区域和bin信息\n
+    ​参数: 
+        - p_chrom1 和 p_chrom2: 染色体名称
+        - p_start1 和 p_start2: 起始位置
+        - p_end1 和 p_end2: 结束位置
+        - p_gene1 和 p_gene2: 基因名称
+        - p_resolution: 分辨率, 默认100
+        - p_genome: 基因组标识
+        - f_size 和 f_index: 文件相关参数
+        - **kwargs: 其他任意关键字参数 \n
+    ​返回值: 包含区域信息和bin信息的元组
+    """
     if p_genome:
         f_size, f_fasta = get_ref(p_genome)
 
@@ -253,12 +364,12 @@ def get_loci(p_chrom1=None, p_chrom2=None,
 
     bins1 = None
     bins2 = None
-
+    # 仅提供染色体名称时，生成对应区间；为分析区域内相互作用初始化默认值
     if p_chrom1 and (p_start1 is None) and (p_end1 is None):
         p_start1, p_end1 = 0, sizes[p_chrom1]-1
     if p_chrom2 and (p_start2 is None) and (p_end2 is None):
         p_start2, p_end2 = 0, sizes[p_chrom2]-1
-    
+    # 分析两个特定区间的相互作用
     if (p_start1 is not None) and (p_end1 is not None) and (p_start2 is not None) and (p_end2 is not None):
         bins1 = (p_end1 - p_start1)//p_resolution
         bins2 = (p_end2 - p_start2)//p_resolution
@@ -267,6 +378,7 @@ def get_loci(p_chrom1=None, p_chrom2=None,
         m_bins = bins1+1
         n_bins = bins2+1
         #DEBUG print("A")
+    # 分析区域内相互作用
     elif (p_start1 is not None) and (p_end1 is not None):
         p_start1, p_end1 = (int(p_start1), int(p_end1))
         bins1 = (p_end1 - p_start1)//p_resolution
@@ -276,6 +388,7 @@ def get_loci(p_chrom1=None, p_chrom2=None,
         m_bins = bins1+1
         n_bins = bins1+1
         #DEBUG print("B")
+    # 分析两个染色体之间的相互作用
     elif (p_chrom1 is not None) and (p_chrom2 is not None):
         bins1 = sizes[p_chrom1]//p_resolution
         bins2 = sizes[p_chrom2]//p_resolution
@@ -285,7 +398,7 @@ def get_loci(p_chrom1=None, p_chrom2=None,
         m_bins = bins1+1
         n_bins = bins2+1
         #DEBUG print("C")
-
+    print(f"Debug: After get_ref(), f_size = {f_size}") 
     return (loci, p_chrom1, p_start1, p_end1,
             p_chrom2, p_start2, p_end2,
             m_bins, n_bins, bins1, bins2)
@@ -296,7 +409,30 @@ def get_contactmap(f_pairs, p_chrom1=None, p_chrom2=None,
                    p_resolution=100, p_multi=False, p_diff=False,
                    p_genome=None, f_size=None, f_index=None, p_downsample=1.0,
                    p_point=False, **kwargs):
+    """
+    get_contactmap 是一个用于从 Hi-C 交互数据生成接触矩阵 (contact matrix) 的核心函数，主要用于构建基因组交互的热图数据。
 
+    ## 函数功能
+    1. 获取基因组区域信息：通过调用 get_loci 确定分析区域
+    2. ​构建接触矩阵：根据输入数据创建 N*N 的交互矩阵
+    3. 支持多种数据处理模式：
+        - 单样本累积模式
+        - 多样本独立模式
+        - 差异比较模式
+    4. ​数据下采样：支持对原始数据进行降采样处理
+    ## 参数解析
+    ### 主要输入参数
+    - **f_pairs**: Hi-C 交互数据文件路径（单个文件或多个文件）
+    ### 基因组坐标参数:
+    - p_chrom1, p_chrom2: 染色体名称
+    - p_start1, p_end1: 区域起始和结束位置
+    - p_gene1, p_gene2: 基因名称（可替代坐标）
+    ### 分析参数:
+    - p_resolution: 分析分辨率 (默认100bp) 
+    - p_multi: 是否处理多个独立样本
+    - p_diff: 是否准备差异分析数据
+    - p_downsample: 下采样比例 (0.0-1.0) 
+    """
     (loci, p_chrom1, p_start1, p_end1,
      p_chrom2, p_start2, p_end2,
      m_bins, n_bins, bins1, bins2) = get_loci(p_chrom1=p_chrom1, p_chrom2=p_chrom2,
@@ -350,6 +486,13 @@ def get_contactmap(f_pairs, p_chrom1=None, p_chrom2=None,
     return raw
 
 def normalize_contactmap(raw, p_mode="none"):
+    """
+    功能: 对接触矩阵进行归一化\n
+    ​参数:
+        raw: 原始接触矩阵列表
+        p_mode: 归一化模式\n
+    ​返回值: 归一化后的矩阵列表
+    """
     norm = []
     for datum in raw:
         if p_mode == "self-relative":
@@ -407,6 +550,13 @@ def normalize_contactmap(raw, p_mode="none"):
     return norm
 
 def compute_differential(norm, p_diff="norm_diff"):
+    """
+    ​功能: 计算两个接触矩阵的差异\n
+    ​参数:
+        norm: 归一化后的矩阵列表
+        p_diff: 差异计算方法\n
+    ​返回值: 差异矩阵
+    """
     pseudocount = 1e-10
     if p_diff == "log2FC":
         results = np.log2((norm[0]+pseudocount)/(norm[1]+pseudocount))
@@ -419,6 +569,14 @@ def compute_differential(norm, p_diff="norm_diff"):
     return results
 
 def set_n_max(norm, p_max, p_mode):
+    """
+    ​功能: 设置颜色映射的最大值\n
+    ​参数:
+        norm: 归一化矩阵
+        p_max: 用户指定的最大值
+        p_mode: 归一化模式\n
+    ​返回值: 计算得到的最大值
+    """
     if p_max is not None:
         n_max = p_max
     else:
@@ -431,6 +589,11 @@ def set_n_max(norm, p_max, p_mode):
     return n_max
 
 def set_p_mode(p_relative, p_self_relative, p_balance, p_vc, p_normalize, **kwargs):
+    """
+    功能: 根据参数设置归一化模式\n
+    ​参数: 各种归一化选项\n
+    ​返回值: 归一化模式字符串
+    """
     p_mode = kwargs["p_mode"]
     if p_relative:
         p_mode = "relative"
@@ -445,6 +608,14 @@ def set_p_mode(p_relative, p_self_relative, p_balance, p_vc, p_normalize, **kwar
     return p_mode
 
 def set_dims(f_pairs, p_col, p_multi, **kwargs):
+    """
+    功能: 设置子图的行列数\n
+    ​参数:
+        f_pairs: 输入文件列表
+        p_col: 列数
+        p_multi: 是否多图模式\n
+    ​返回值: (行数, 列数)
+    """
     if p_multi:
         n_rows = ((len(f_pairs)-1)//p_col)+1
         n_cols = ((len(f_pairs)-1)%p_col)+1
@@ -456,7 +627,12 @@ def set_dims(f_pairs, p_col, p_multi, **kwargs):
 def add_structure_overlay(ax,
                           f_dot, p_resolution, p_display, p_structure, f_fasta,
                           p_chrom1, p_start1, p_end1, p_dot_size, p_col, **kwargs):
-        
+    """
+    功能: 
+    在接触图上添加RNA二级结构叠加,#256baf(蓝色)表示外部结构数据,red表示预测的配对概率\n
+    ​参数: 各种结构相关参数\n
+    ​返回值: 更新后的axes对象
+    """
     datum_structs = []
     color_structs = ["#256baf", "red"]
     #color_structs = ["purple", "red"]
@@ -493,6 +669,11 @@ def add_structure_overlay(ax,
 def add_loop_overlay(ax,
                      p_chrom1, p_start1, p_end1,
                      f_loop, p_resolution, p_point, **kwargs):
+    """
+    ​功能: 在接触图上添加环状结构叠加\n
+    ​参数: 各种环状结构相关参数\n
+    ​返回值: 更新后的axes对象
+    """
     dict_color = {"loops": "black", "lstripe": "blue", "rstripe": "green"}
     if f_loop is not None:
         p_boxwidth = 1.0
@@ -535,7 +716,11 @@ def label_axes(ax, sizes, p_multi, p_label_res,
                p_chrom1, p_start1, p_end1,
                p_chrom2, p_start2, p_end2,
                bins1, bins2):
-    
+    """
+    功能: 设置坐标轴标签\n
+    ​参数: 各种区域和标签相关参数\n
+    ​返回值: 更新后的axes对象
+    """
     xloc = ax[0][0].get_xticks()
     yloc = ax[0][0].get_yticks()
     xlabel = ax[0][0].get_xticklabels()
@@ -568,6 +753,16 @@ def label_axes(ax, sizes, p_multi, p_label_res,
     return ax
 
 def create_axes(n_rows, n_cols, p_ax, p_figsize, p_dpi, **kwargs):
+    """
+    ​功能: 创建图形和axes对象\n
+    ​参数:
+        n_rows: 行数
+        n_cols: 列数
+        p_ax: 现有axes
+        p_figsize: 图形大小
+        p_dpi: 分辨率\n
+    ​返回值: (fig, ax)元组
+    """
     if p_ax is None:
         fig, ax = plt.subplots(n_rows, n_cols,
                                figsize=((p_figsize[0]*n_cols)+2, p_figsize[1]*n_rows),
@@ -592,10 +787,63 @@ def plot_contactmap(f_pairs, p_chrom1=None, p_chrom2=None,
                     f_index=None,
                     p_downsample=1.0, p_figsize=(4, 4), p_dot_size=5.0, p_point=False,
                     p_label_res=1000, p_dpi=100, p_ax=None, p_verbose=True):
-    
+    """
+    # 功能概述
+    plot_contactmap() 是一个综合性的绘图函数，主要功能包括：
+        - 加载和预处理: 从输入的基因组交互数据 (如Hi-C数据)中提取指定区域的接触频率。
+        - 归一化处理: 支持多种归一化方法 (如KR平衡、VC归一化等)。
+        - 可视化: 生成热图形式的接触图, 并可叠加RNA二级结构、染色质环 (loops) 等注释信息。
+        - 输出: 支持保存为图片文件或返回Matplotlib对象供进一步调整。
+    # 核心参数说明
+    1. 输入数据参数
+        - f_pairs: 必选参数，输入文件的路径（如.pairs或.cool格式的Hi-C数据文件)。
+        - p_chrom1/p_charm2: 染色体名称（如"chr1"），用于指定查询区域。
+        - p_start1/p_end1: 起始和终止位置（坐标范围）。
+        - p_gene1/p_gene2: 基因名称 (替代直接坐标,需配合f_index使用)。
+    2. 数据处理参数
+        - p_resolution: 分辨率 (bin大小, 默认100bp)。
+        - p_downsample: 下采样比例 (0.0-1.0)，用于减少数据量。
+        - p_mode: 归一化模式，支持:
+            "none"（原始计数）
+            "KR" (Knight-Ruiz平衡) 
+            "VC"（方差校正）
+            "self-relative"（相对自身深度归一化）
+            "normalize"（按对角线距离归一化）
+    3. 可视化参数
+        - p_max: 颜色映射的最大值（自动计算或手动指定）。
+        - p_figsize: 图像尺寸（默认(4, 4)）。
+        - p_dpi: 图像分辨率 (默认100)。
+        - f_out: 输出文件路径（如"output.png"）。
+    4. 叠加注释参数
+        - f_loop: 染色质环 (loops) 的BED文件路径, 用于在热图上标记环状结构。
+        - f_dot: RNA二级结构文件 (点括号格式)，用于叠加碱基配对信息。
+        - p_structure: 若为True, 从f_fasta序列预测RNA二级结构并叠加。
+        - p_display: 显示模式 ("full"、"upper"或"lower"三角矩阵）。
+    # ​工作流程\n
+        1. 区域解析：
+            调用get_loci()根据输入参数生成查询区域（如"chr1:1000000-2000000"）。
+            若通过基因名称查询, 使用f_index文件解析坐标。
+            ​数据加载与统计：
+            调用get_contactmap()从输入文件中提取指定区域的交互频率，生成原始接触矩阵。
+        2. ​归一化处理：
+            调用normalize_contactmap()按指定方法 (如KR平衡) 归一化数据。
+            ​绘图设置：
+            根据数据量自动调整子图布局 (n_rows/n_cols)。
+            创建Matplotlib的fig和ax对象。
+        3. ​绘制热图：
+            使用imshow()绘制接触矩阵，颜色映射为"Reds"（默认）或"coolwarm"（归一化差异时）。
+            添加颜色条 (colorbar)。
+        4. ​叠加注释：
+            若有f_loop, 调用add_loop_overlay()用矩形框标记环状结构。
+            若有f_dot或p_structure, 调用add_structure_overlay()用散点标记碱基配对。
+        5. ​坐标轴调整：
+            调用label_axes()将bin编号转换为实际基因组坐标 (如1.0Mb)。
+        6. ​输出结果：
+            保存图像 (若f_out指定) 或返回fig和ax对象。
+    """
     if p_genome:
         f_size, f_fasta = get_ref(p_genome)
-    
+
     dict_kwargs = {"f_pairs": f_pairs, "p_chrom1": p_chrom1, "p_chrom2": p_chrom2,
                    "p_start1": p_start1, "p_start2": p_start2,
                    "p_end1": p_end1, "p_end2": p_end2,
@@ -613,7 +861,7 @@ def plot_contactmap(f_pairs, p_chrom1=None, p_chrom2=None,
     (loci, p_chrom1, p_start1, p_end1,
      p_chrom2, p_start2, p_end2,
      m_bins, n_bins, bins1, bins2) = get_loci(**dict_kwargs)
-    
+
     sizes = get_size(f_size)    
     raw = get_contactmap(**dict_kwargs)
     p_mode = set_p_mode(**dict_kwargs)
@@ -689,7 +937,35 @@ def plot_diffmap(f_pairs, p_chrom1=None, p_chrom2=None,
                  f_index=None,
                  p_downsample=1.0, p_figsize=(4, 4), p_dot_size=5.0, p_point=False,
                  p_label_res=1000, p_dpi=100, p_ax=None, p_verbose=True):
-    
+    """
+    plot_diffmap 是一个用于可视化基因组交互差异 (differential genomic interactions) 的函数，主要用于分析 Hi-C 或其他染色质构象捕获数据中的差异交互模式。
+    1. 函数功能
+        获取基因组区域信息
+        加载接触矩阵 (contact map) 数据
+        标准化接触矩阵
+        计算差异交互模式
+        绘制差异热图
+        添加各种注释和覆盖层（如结构信息、染色质环等）
+    2. 参数详解
+    主要输入参数
+        **f_pairs**: 输入文件路径，包含交互对数据
+    ​染色体/区域参数:
+        - p_chrom1, p_chrom2: 染色体名称
+        - p_start1, p_start2, p_end1, p_end2: 区域起止位置
+        - p_gene1, p_gene2: 基因名称（可替代坐标）
+    ​分辨率参数:
+        p_resolution: 分析分辨率 (默认100bp) 
+    ​显示控制参数:
+        - p_max: 颜色标尺的最大值
+        - p_balance: 是否平衡矩阵
+        - p_relative: 是否显示相对值
+        - p_normalize: 是否标准化
+        - p_mode: 标准化模式
+    ​输出控制参数:
+        - f_out: 输出文件路径
+        - p_figsize: 图形大小
+        - p_dpi: 输出分辨率
+    """
     if p_genome:
         f_size, f_fasta = get_ref(p_genome)
     
@@ -779,7 +1055,30 @@ def plot_contactmap_w_arcbands(f_pairs, f_cluster, p_chrom1=None, p_chrom2=None,
                                f_index=None,
                                p_downsample=1.0, p_figsize=(4, 4), p_dot_size=5.0, p_point=False,
                                p_label_res=1000, p_dpi=100, p_ax=None, p_verbose=True, p_order=None):
-    
+    """
+    这是一个用于可视化基因组接触图（contact map）并带有弧形条带（arcband）注释的函数，主要用于展示Hi-C数据中的染色质交互模式和结构域信息。
+    ## 主要功能
+    - 绘制基因组接触热图
+    - 在热图上方添加弧形条带注释
+    - 支持多种数据标准化方式
+    - 可添加染色质环和结构注释
+    ## 参数解析
+    ### 核心输入参数
+    - **f_pairs**: Hi-C交互数据文件路径
+    - **f_cluster**: 结构域/聚类信息文件路径（用于弧形条带）
+    ### ​基因组坐标参数:
+    - p_chrom1, p_chrom2: 染色体名称
+    - p_start1, p_end1: 区域起始和结束位置
+    - p_gene1, p_gene2: 基因名称（替代坐标）
+    ### 可视化控制参数
+    - **p_resolution**: 分析分辨率 (默认100bp) 
+    - **p_max**: 颜色标尺最大值
+    - **p_balance**: 是否进行矩阵平衡
+    - **p_normalize**: 是否标准化数据
+    - **p_mode**: 标准化模式
+    - **p_figsize**: 图形尺寸
+    - **p_dpi**: 输出分辨率
+    """
     if p_genome:
         f_size, f_fasta = get_ref(p_genome)
     

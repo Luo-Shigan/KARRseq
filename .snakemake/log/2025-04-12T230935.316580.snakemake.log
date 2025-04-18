@@ -1,0 +1,167 @@
+host: d419
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 30
+Rules claiming more threads will be scaled down.
+Job stats:
+job                                        count
+---------------------------------------  -------
+align_with_STAR                                2
+star_single_end_chimeric_reads_to_pairs        2
+star_single_end_ligation                       2
+star_single_end_remove_duplicates              2
+targets_all                                    1
+total                                          9
+
+Select jobs to execute...
+Execute 2 jobs...
+
+[Sat Apr 12 23:09:35 2025]
+localrule align_with_STAR:
+    input: ../../output/merge/mouse/SRR13628277/SRR13628277_merge.fastq.gz
+    output: ../../output/bam/mouse/SRR13628277/SRR13628277_Aligned.sortedByCoord.out.bam, ../../output/bam/mouse/SRR13628277/SRR13628277_Chimeric.out.sam
+    log: ../../output/log/mouse/SRR13628277/STAR.log
+    jobid: 4
+    reason: Missing output files: ../../output/bam/mouse/SRR13628277/SRR13628277_Chimeric.out.sam, ../../output/bam/mouse/SRR13628277/SRR13628277_Aligned.sortedByCoord.out.bam; Params have changed since last execution: Union of exclusive params before and now across all output: before: '/ChIP_seq_2/Data/index/Mus_musculus/GENCODE/GRCm39/star','/opt/STAR-2.5.2a/bin/Linux_x86_64','../../output/bam/SRR13628277/SRR13628277' now: '/ChIP_seq_2/Data/index/Mus_musculus/GENCODE/GRCm39/star2.5.2a','/opt/STAR-2.5.2a/bin/Linux_x86_64/STAR','../../output/bam/mouse/SRR13628277/SRR13628277' 
+    wildcards: genome=mouse, sample=SRR13628277
+    threads: 15
+    resources: tmpdir=/tmp
+
+
+[Sat Apr 12 23:09:36 2025]
+localrule align_with_STAR:
+    input: ../../output/merge/mouse/SRR13628276/SRR13628276_merge.fastq.gz
+    output: ../../output/bam/mouse/SRR13628276/SRR13628276_Aligned.sortedByCoord.out.bam, ../../output/bam/mouse/SRR13628276/SRR13628276_Chimeric.out.sam
+    log: ../../output/log/mouse/SRR13628276/STAR.log
+    jobid: 9
+    reason: Missing output files: ../../output/bam/mouse/SRR13628276/SRR13628276_Aligned.sortedByCoord.out.bam, ../../output/bam/mouse/SRR13628276/SRR13628276_Chimeric.out.sam; Params have changed since last execution: Union of exclusive params before and now across all output: before: '../../output/bam/SRR13628276/SRR13628276' now: '../../output/bam/mouse/SRR13628276/SRR13628276' 
+    wildcards: genome=mouse, sample=SRR13628276
+    threads: 15
+    resources: tmpdir=/tmp
+
+[Sat Apr 12 23:34:53 2025]
+Finished job 9.
+1 of 9 steps (11%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sat Apr 12 23:34:53 2025]
+localrule star_single_end_chimeric_reads_to_pairs:
+    input: ../../output/bam/mouse/SRR13628276/SRR13628276_Aligned.sortedByCoord.out.bam, ../../output/bam/mouse/SRR13628276/SRR13628276_Chimeric.out.sam
+    output: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.txt.gz
+    log: ../../output/log/mouse/SRR13628276/star_single_end_chimeric_reads_to_pairs.log
+    jobid: 8
+    reason: Missing output files: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.txt.gz; Input files updated by another job: ../../output/bam/mouse/SRR13628276/SRR13628276_Aligned.sortedByCoord.out.bam, ../../output/bam/mouse/SRR13628276/SRR13628276_Chimeric.out.sam
+    wildcards: genome=mouse, sample=SRR13628276
+    threads: 4
+    resources: tmpdir=/tmp
+
+Activating conda environment: ../../../../../home/luosg/miniconda3/envs/KARRseq
+[Sat Apr 12 23:35:18 2025]
+Finished job 4.
+2 of 9 steps (22%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sat Apr 12 23:35:18 2025]
+localrule star_single_end_chimeric_reads_to_pairs:
+    input: ../../output/bam/mouse/SRR13628277/SRR13628277_Aligned.sortedByCoord.out.bam, ../../output/bam/mouse/SRR13628277/SRR13628277_Chimeric.out.sam
+    output: ../../output/chimeric/pairs/mouse/SRR13628277/SRR13628277.txt.gz
+    log: ../../output/log/mouse/SRR13628277/star_single_end_chimeric_reads_to_pairs.log
+    jobid: 3
+    reason: Missing output files: ../../output/chimeric/pairs/mouse/SRR13628277/SRR13628277.txt.gz; Input files updated by another job: ../../output/bam/mouse/SRR13628277/SRR13628277_Chimeric.out.sam, ../../output/bam/mouse/SRR13628277/SRR13628277_Aligned.sortedByCoord.out.bam
+    wildcards: genome=mouse, sample=SRR13628277
+    threads: 4
+    resources: tmpdir=/tmp
+
+Activating conda environment: ../../../../../home/luosg/miniconda3/envs/KARRseq
+[Sat Apr 12 23:39:25 2025]
+Finished job 8.
+3 of 9 steps (33%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sat Apr 12 23:39:25 2025]
+localrule star_single_end_remove_duplicates:
+    input: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.txt.gz
+    output: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.dedup.txt.gz, ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.dedup.bed, ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.dedup.pairs.gz
+    log: ../../output/log/mouse/SRR13628276/star_single_end_remove_duplicates.log
+    jobid: 7
+    reason: Missing output files: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.dedup.txt.gz; Input files updated by another job: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.txt.gz
+    wildcards: genome=mouse, sample=SRR13628276
+    resources: tmpdir=/tmp
+
+Activating conda environment: ../../../../../home/luosg/miniconda3/envs/KARRseq
+[Sat Apr 12 23:41:05 2025]
+Finished job 3.
+4 of 9 steps (44%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sat Apr 12 23:41:05 2025]
+localrule star_single_end_remove_duplicates:
+    input: ../../output/chimeric/pairs/mouse/SRR13628277/SRR13628277.txt.gz
+    output: ../../output/chimeric/pairs/mouse/SRR13628277/SRR13628277.dedup.txt.gz, ../../output/chimeric/pairs/mouse/SRR13628277/SRR13628277.dedup.bed, ../../output/chimeric/pairs/mouse/SRR13628277/SRR13628277.dedup.pairs.gz
+    log: ../../output/log/mouse/SRR13628277/star_single_end_remove_duplicates.log
+    jobid: 2
+    reason: Missing output files: ../../output/chimeric/pairs/mouse/SRR13628277/SRR13628277.dedup.txt.gz; Input files updated by another job: ../../output/chimeric/pairs/mouse/SRR13628277/SRR13628277.txt.gz
+    wildcards: genome=mouse, sample=SRR13628277
+    resources: tmpdir=/tmp
+
+Activating conda environment: ../../../../../home/luosg/miniconda3/envs/KARRseq
+[Sat Apr 12 23:41:50 2025]
+Finished job 7.
+5 of 9 steps (56%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sat Apr 12 23:41:50 2025]
+localrule star_single_end_ligation:
+    input: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.dedup.txt.gz
+    output: ../../output/chimeric/inner/mouse/SRR13628276/SRR13628276.dedup.pairs.gz
+    log: ../../output/log/mouse/SRR13628276/star_single_end_ligation.log
+    jobid: 6
+    reason: Missing output files: ../../output/chimeric/inner/mouse/SRR13628276/SRR13628276.dedup.pairs.gz; Input files updated by another job: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.dedup.txt.gz
+    wildcards: genome=mouse, sample=SRR13628276
+    threads: 4
+    resources: tmpdir=/tmp
+
+Activating conda environment: ../../../../../home/luosg/miniconda3/envs/KARRseq
+[Sat Apr 12 23:43:08 2025]
+Finished job 6.
+6 of 9 steps (67%) done
+[Sat Apr 12 23:43:37 2025]
+Finished job 2.
+7 of 9 steps (78%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sat Apr 12 23:43:37 2025]
+localrule star_single_end_ligation:
+    input: ../../output/chimeric/pairs/mouse/SRR13628277/SRR13628277.dedup.txt.gz
+    output: ../../output/chimeric/inner/mouse/SRR13628277/SRR13628277.dedup.pairs.gz
+    log: ../../output/log/mouse/SRR13628277/star_single_end_ligation.log
+    jobid: 1
+    reason: Missing output files: ../../output/chimeric/inner/mouse/SRR13628277/SRR13628277.dedup.pairs.gz; Input files updated by another job: ../../output/chimeric/pairs/mouse/SRR13628277/SRR13628277.dedup.txt.gz
+    wildcards: genome=mouse, sample=SRR13628277
+    threads: 4
+    resources: tmpdir=/tmp
+
+Activating conda environment: ../../../../../home/luosg/miniconda3/envs/KARRseq
+[Sat Apr 12 23:45:03 2025]
+Finished job 1.
+8 of 9 steps (89%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sat Apr 12 23:45:03 2025]
+localrule targets_all:
+    input: ../../output/chimeric/inner/mouse/SRR13628277/SRR13628277.dedup.pairs.gz, ../../output/chimeric/inner/mouse/SRR13628276/SRR13628276.dedup.pairs.gz
+    jobid: 0
+    reason: Input files updated by another job: ../../output/chimeric/inner/mouse/SRR13628276/SRR13628276.dedup.pairs.gz, ../../output/chimeric/inner/mouse/SRR13628277/SRR13628277.dedup.pairs.gz
+    resources: tmpdir=/tmp
+
+[Sat Apr 12 23:45:03 2025]
+Finished job 0.
+9 of 9 steps (100%) done
+Complete log: .snakemake/log/2025-04-12T230935.316580.snakemake.log

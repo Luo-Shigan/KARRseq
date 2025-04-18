@@ -1,0 +1,116 @@
+host: d419
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 30
+Rules claiming more threads will be scaled down.
+Job stats:
+job                                        count
+---------------------------------------  -------
+align_with_STAR                                1
+merge_fastq                                    1
+star_single_end_chimeric_reads_to_pairs        2
+star_single_end_ligation                       2
+star_single_end_remove_duplicates              2
+targets_all                                    1
+total                                          9
+
+Select jobs to execute...
+Execute 2 jobs...
+
+[Fri Apr 11 20:56:39 2025]
+localrule star_single_end_chimeric_reads_to_pairs:
+    input: ../../output/bam/mouse/SRR13628276/SRR13628276_Aligned.sortedByCoord.out.bam, ../../output/bam/mouse/SRR13628276/SRR13628276_Chimeric.out.sam
+    output: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.txt.gz
+    log: ../../output/log/mouse/SRR13628276/star_single_end_chimeric_reads_to_pairs.log
+    jobid: 8
+    reason: Missing output files: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.txt.gz
+    wildcards: genome=mouse, sample=SRR13628276
+    threads: 4
+    resources: tmpdir=/tmp
+
+Activating conda environment: ../../../../../home/luosg/miniconda3/envs/KARRseq
+
+[Fri Apr 11 20:56:40 2025]
+localrule merge_fastq:
+    input: ../../data/GSE166155/fq/SRR13628277_1.fastq.gz, ../../data/GSE166155/fq/SRR13628277_2.fastq.gz
+    output: ../../output/merge/mouse/SRR13628277/SRR13628277_unmerge_1.fastq.gz, ../../output/merge/mouse/SRR13628277/SRR13628277_unmerge_2.fastq.gz, ../../output/merge/mouse/SRR13628277/SRR13628277_reject_1.fastq.gz, ../../output/merge/mouse/SRR13628277/SRR13628277_reject_2.fastq.gz, ../../output/merge/mouse/SRR13628277/SRR13628277_merge.fastq.gz
+    log: ../../output/log/mouse/SRR13628277/merge_fastq.log
+    jobid: 5
+    reason: Missing output files: ../../output/merge/mouse/SRR13628277/SRR13628277_merge.fastq.gz
+    wildcards: genome=mouse, sample=SRR13628277
+    resources: tmpdir=/tmp
+
+Activating conda environment: ../../../../../home/luosg/miniconda3/envs/KARRseq
+[Fri Apr 11 21:02:10 2025]
+Finished job 8.
+1 of 9 steps (11%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Fri Apr 11 21:02:10 2025]
+localrule star_single_end_remove_duplicates:
+    input: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.txt.gz
+    output: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.dedup.txt.gz, ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.dedup.bed, ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.dedup.pairs.gz
+    log: ../../output/log/mouse/SRR13628276/star_single_end_remove_duplicates.log
+    jobid: 7
+    reason: Missing output files: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.dedup.txt.gz; Input files updated by another job: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.txt.gz
+    wildcards: genome=mouse, sample=SRR13628276
+    resources: tmpdir=/tmp
+
+Activating conda environment: ../../../../../home/luosg/miniconda3/envs/KARRseq
+[Fri Apr 11 21:04:41 2025]
+Finished job 7.
+2 of 9 steps (22%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Fri Apr 11 21:04:41 2025]
+localrule star_single_end_ligation:
+    input: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.dedup.txt.gz
+    output: ../../output/chimeric/inner/mouse/SRR13628276/SRR13628276.dedup.pairs.gz
+    log: ../../output/log/mouseSRR13628276/star_single_end_ligation.log
+    jobid: 6
+    reason: Missing output files: ../../output/chimeric/inner/mouse/SRR13628276/SRR13628276.dedup.pairs.gz; Input files updated by another job: ../../output/chimeric/pairs/mouse/SRR13628276/SRR13628276.dedup.txt.gz
+    wildcards: genome=mouse, sample=SRR13628276
+    threads: 4
+    resources: tmpdir=/tmp
+
+Activating conda environment: ../../../../../home/luosg/miniconda3/envs/KARRseq
+[Fri Apr 11 21:06:01 2025]
+Finished job 6.
+3 of 9 steps (33%) done
+[Sat Apr 12 03:32:45 2025]
+Finished job 5.
+4 of 9 steps (44%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sat Apr 12 03:32:45 2025]
+localrule align_with_STAR:
+    input: ../../output/merge/mouse/SRR13628277/SRR13628277_merge.fastq.gz
+    output: ../../output/bam/mouse/SRR13628277/SRR13628277_Aligned.sortedByCoord.out.bam, ../../output/bam/mouse/SRR13628277/SRR13628277_Chimeric.out.sam
+    log: ../../output/log/mouse/SRR13628277/STAR.log
+    jobid: 4
+    reason: Missing output files: ../../output/bam/mouse/SRR13628277/SRR13628277_Aligned.sortedByCoord.out.bam, ../../output/bam/mouse/SRR13628277/SRR13628277_Chimeric.out.sam; Input files updated by another job: ../../output/merge/mouse/SRR13628277/SRR13628277_merge.fastq.gz
+    wildcards: genome=mouse, sample=SRR13628277
+    threads: 15
+    resources: tmpdir=/tmp
+
+[Sat Apr 12 03:32:45 2025]
+Error in rule align_with_STAR:
+    jobid: 4
+    input: ../../output/merge/mouse/SRR13628277/SRR13628277_merge.fastq.gz
+    output: ../../output/bam/mouse/SRR13628277/SRR13628277_Aligned.sortedByCoord.out.bam, ../../output/bam/mouse/SRR13628277/SRR13628277_Chimeric.out.sam
+    log: ../../output/log/mouse/SRR13628277/STAR.log (check log file(s) for error details)
+    shell:
+        
+        /opt/STAR-2.5.2a/bin/Linux_x86_64             --runMode alignReads             --runThreadN 15             --genomeDir /ChIP_seq_2/Data/index/Mus_musculus/GENCODE/GRCm39/star             --readFilesIn ../../output/merge/mouse/SRR13628277/SRR13628277_merge.fastq.gz             --readFilesCommand zcat             --outFileNamePrefix ../../output/bam/SRR13628277/SRR13628277_             --outReadsUnmapped Fastq             --outFilterMultimapNmax 100             --outSAMtype BAM SortedByCoordinate             --outSAMattributes All             --alignIntronMin 1             --scoreGapNoncan -4             --scoreGapATAC -4             --chimSegmentMin 15             --chimJunctionOverhangMin 15             --limitOutSJcollapsed 10000000             --limitIObufferSize 1500000000 > ../../output/log/mouse/SRR13628277/STAR.log
+        samtools index ../../output/bam/mouse/SRR13628277/SRR13628277_Aligned.sortedByCoord.out.bam 2>> ../../output/log/mouse/SRR13628277/STAR.log
+        
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake/log/2025-04-11T205639.310035.snakemake.log
+WorkflowError:
+At least one job did not complete successfully.

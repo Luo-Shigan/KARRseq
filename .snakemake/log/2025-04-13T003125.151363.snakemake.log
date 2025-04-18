@@ -1,0 +1,75 @@
+host: d419
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 30
+Rules claiming more threads will be scaled down.
+Job stats:
+job            count
+-----------  -------
+merge_fastq        2
+targets_all        1
+total              3
+
+Select jobs to execute...
+Execute 2 jobs...
+
+[Sun Apr 13 00:31:25 2025]
+localrule merge_fastq:
+    input: ../../data/GSE166155/fq/SRR13628277_1.fastq.gz, ../../data/GSE166155/fq/SRR13628277_2.fastq.gz
+    output: ../../output/merge/mouse/SRR13628277/SRR13628277_unmerge_1.fastq.gz, ../../output/merge/mouse/SRR13628277/SRR13628277_unmerge_2.fastq.gz, ../../output/merge/mouse/SRR13628277/SRR13628277_reject_1.fastq.gz, ../../output/merge/mouse/SRR13628277/SRR13628277_reject_2.fastq.gz, ../../output/merge/mouse/SRR13628277/SRR13628277_merge.fastq.gz, ../../output/merge/mouse/SRR13628277/SRR13628277_merge.report
+    log: ../../output/log/mouse/SRR13628277/merge_fastq.log
+    jobid: 1
+    reason: Missing output files: ../../output/merge/mouse/SRR13628277/SRR13628277_merge.report
+    wildcards: genome=mouse, sample=SRR13628277
+    resources: tmpdir=/tmp
+
+Activating conda environment: ../../../../../home/luosg/miniconda3/envs/KARRseq
+
+[Sun Apr 13 00:31:27 2025]
+localrule merge_fastq:
+    input: ../../data/GSE166155/fq/SRR13628276_1.fastq.gz, ../../data/GSE166155/fq/SRR13628276_2.fastq.gz
+    output: ../../output/merge/mouse/SRR13628276/SRR13628276_unmerge_1.fastq.gz, ../../output/merge/mouse/SRR13628276/SRR13628276_unmerge_2.fastq.gz, ../../output/merge/mouse/SRR13628276/SRR13628276_reject_1.fastq.gz, ../../output/merge/mouse/SRR13628276/SRR13628276_reject_2.fastq.gz, ../../output/merge/mouse/SRR13628276/SRR13628276_merge.fastq.gz, ../../output/merge/mouse/SRR13628276/SRR13628276_merge.report
+    log: ../../output/log/mouse/SRR13628276/merge_fastq.log
+    jobid: 2
+    reason: Missing output files: ../../output/merge/mouse/SRR13628276/SRR13628276_merge.report
+    wildcards: genome=mouse, sample=SRR13628276
+    resources: tmpdir=/tmp
+
+[Sun Apr 13 00:31:28 2025]
+Error in rule merge_fastq:
+    jobid: 1
+    input: ../../data/GSE166155/fq/SRR13628277_1.fastq.gz, ../../data/GSE166155/fq/SRR13628277_2.fastq.gz
+    output: ../../output/merge/mouse/SRR13628277/SRR13628277_unmerge_1.fastq.gz, ../../output/merge/mouse/SRR13628277/SRR13628277_unmerge_2.fastq.gz, ../../output/merge/mouse/SRR13628277/SRR13628277_reject_1.fastq.gz, ../../output/merge/mouse/SRR13628277/SRR13628277_reject_2.fastq.gz, ../../output/merge/mouse/SRR13628277/SRR13628277_merge.fastq.gz, ../../output/merge/mouse/SRR13628277/SRR13628277_merge.report
+    log: ../../output/log/mouse/SRR13628277/merge_fastq.log (check log file(s) for error details)
+    conda-env: /home/luosg/miniconda3/envs/KARRseq
+    shell:
+        
+	    # SeqPrep         #     -f ../../data/GSE166155/fq/SRR13628277_1.fastq.gz         #     -r ../../data/GSE166155/fq/SRR13628277_2.fastq.gz         #     -1 ../../output/merge/mouse/SRR13628277/SRR13628277_unmerge_1.fastq.gz         #     -2 ../../output/merge/mouse/SRR13628277/SRR13628277_unmerge_2.fastq.gz         #     -3 ../../output/merge/mouse/SRR13628277/SRR13628277_reject_1.fastq.gz         #     -4 ../../output/merge/mouse/SRR13628277/SRR13628277_reject_2.fastq.gz         #     -s ../../output/merge/mouse/SRR13628277/SRR13628277_merge.fastq.gz 2> ../../output/log/mouse/SRR13628277/merge_fastq.log
+        seqkit stats ../../output/merge/mouse/SRR13628277/SRR13628277_merge.fastq.gz > ../../output/merge/mouse/SRR13628277/SRR13628277_merge.report 2>> ../../output/log/mouse/SRR13628277/merge_fastq.log
+        
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Activating conda environment: ../../../../../home/luosg/miniconda3/envs/KARRseq
+[Sun Apr 13 00:31:29 2025]
+Error in rule merge_fastq:
+    jobid: 2
+    input: ../../data/GSE166155/fq/SRR13628276_1.fastq.gz, ../../data/GSE166155/fq/SRR13628276_2.fastq.gz
+    output: ../../output/merge/mouse/SRR13628276/SRR13628276_unmerge_1.fastq.gz, ../../output/merge/mouse/SRR13628276/SRR13628276_unmerge_2.fastq.gz, ../../output/merge/mouse/SRR13628276/SRR13628276_reject_1.fastq.gz, ../../output/merge/mouse/SRR13628276/SRR13628276_reject_2.fastq.gz, ../../output/merge/mouse/SRR13628276/SRR13628276_merge.fastq.gz, ../../output/merge/mouse/SRR13628276/SRR13628276_merge.report
+    log: ../../output/log/mouse/SRR13628276/merge_fastq.log (check log file(s) for error details)
+    conda-env: /home/luosg/miniconda3/envs/KARRseq
+    shell:
+        
+	    # SeqPrep         #     -f ../../data/GSE166155/fq/SRR13628276_1.fastq.gz         #     -r ../../data/GSE166155/fq/SRR13628276_2.fastq.gz         #     -1 ../../output/merge/mouse/SRR13628276/SRR13628276_unmerge_1.fastq.gz         #     -2 ../../output/merge/mouse/SRR13628276/SRR13628276_unmerge_2.fastq.gz         #     -3 ../../output/merge/mouse/SRR13628276/SRR13628276_reject_1.fastq.gz         #     -4 ../../output/merge/mouse/SRR13628276/SRR13628276_reject_2.fastq.gz         #     -s ../../output/merge/mouse/SRR13628276/SRR13628276_merge.fastq.gz 2> ../../output/log/mouse/SRR13628276/merge_fastq.log
+        seqkit stats ../../output/merge/mouse/SRR13628276/SRR13628276_merge.fastq.gz > ../../output/merge/mouse/SRR13628276/SRR13628276_merge.report 2>> ../../output/log/mouse/SRR13628276/merge_fastq.log
+        
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Removing output files of failed job merge_fastq since they might be corrupted:
+../../output/merge/mouse/SRR13628277/SRR13628277_merge.report
+Removing output files of failed job merge_fastq since they might be corrupted:
+../../output/merge/mouse/SRR13628276/SRR13628276_merge.report
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake/log/2025-04-13T003125.151363.snakemake.log
+WorkflowError:
+At least one job did not complete successfully.
