@@ -249,7 +249,29 @@ def call_clusters(data, counter, o_bed, o_output,
         e1_m = np.percentile(e1, 50)
         s2_m = np.percentile(s2, 50)
         e2_m = np.percentile(e2, 50)
-
+        span = abs(s2_m - e1_m)
+            # 计算变异系数
+        def calculate_cv(values):
+            mean = np.mean(values)
+            std = np.std(values)
+            return (std / mean) * 100 if mean != 0 else 0.0
+        cv_s1 = calculate_cv(s1)
+        cv_e2 = calculate_cv(e2)
+        cv_s2 = calculate_cv(s2)
+        cv_e1 = calculate_cv(e1)
+        # 左锚点坐标：所有左臂起始位置的中位数
+        # 右锚点坐标：所有右臂结束位置的中位数
+        def classify_structure(cv_s1m, cv_e2m):
+            """根据CV阈值判断结构类型"""
+            if cv_s1m < 1.0 and cv_e2m < 1.0:
+                return "loops"
+            elif cv_s1m < 1.0:
+                return "lstripe"
+            elif cv_e2m < 1.0:
+                return "rstrip"
+            else:
+                return "noise_or_unstable"
+        label = classify_structure(cv_s1,cv_e2)
         ### 输出结果
         # ==============
         # write median
@@ -283,7 +305,7 @@ def call_clusters(data, counter, o_bed, o_output,
         # write txt
         # =============
         # 生成一个包含中位坐标的文本行，并写入到 o_output 文件中。
-        out_coords = [c1[0], int(s1_m), int(e1_m), c1[0], int(s2_m), int(e2_m)]
+        out_coords = [c1[0], int(s1_m), int(e1_m), c1[0], int(s2_m), int(e2_m),label,cv_s1,cv_e2,cv_s2,cv_e1]
         txt.append(out_coords)
         if o_output is not None:
             o_output.write("\t".join(map(str, out_coords)) + "\n")

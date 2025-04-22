@@ -4,5 +4,6 @@ index:
   star:
     human: "/ChIP_seq_2/Data/index/Homo_sapiens/GENCODE/GRCh38/star2.5.2a"
     mouse: "/ChIP_seq_2/Data/index/Mus_musculus/GENCODE/GRCm39/star2.5.2a"
+    mouse_transcript: "/ChIP_seq_2/Data/index/Mus_musculus/GENCODE/GRCm39/star2.5.2a_transcripts"
 procedure:
   STAR: "/opt/STAR-2.5.2a/bin/Linux_x86_64/STAR"

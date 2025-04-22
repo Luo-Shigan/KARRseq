@@ -29,8 +29,8 @@ def get_cigar_chimeric(cigar):
     matches = []
     for m, n in list(Cigar(cigar).items()):
         if n == "M":
-            matches.append(m)
-    if len(matches) >= 1:
+            matches.append(m) #记录当前匹配长度
+    if len(matches) >= 1: 
         return matches[0]
     else:
         return None
@@ -47,7 +47,7 @@ def main(f_app, mapq_threshold, span_threshold):
         
         row = line.strip("\r\n").split("\t")
         
-        iid = row[0]
+        iid = row[0] # read id
         flag = int(row[1])
         chrom = row[2]
         start = int(row[3])  # SAM: 1-based
@@ -56,7 +56,7 @@ def main(f_app, mapq_threshold, span_threshold):
         
         # get flag id
         strand = get_strand(flag)
-        
+        # the double mapping cirsumstance doesn't exist
         if f_app == "Aligned":
             
             if "N" in cigar:
@@ -80,7 +80,21 @@ def main(f_app, mapq_threshold, span_threshold):
                                                       qual, qual,
                                                       l1, l2, 
                                                       "L", "R", 0])))
-            
+        #iid: read id
+        #chrom: reference name
+        #start: 1-based mapping begin position
+        #chrom: reference name
+        #start+l1+gam: 1-based mapping begin position + first continuous mapping segment length + length of the gap between the two continuous mapping segments
+        #strand: strand
+        #strand: strand
+        #qual: mapping quality
+        #qual: mapping quality
+        #l1: length of the first continuous mapping segment
+        #l2: length of the second continuous mapping segment
+        # L R 0 represent the aligned mapping 
+        # this align may also represent interaction
+
+        # double mapping circumstance
         if f_app == "Chimeric":
             
             # get fragment length
@@ -124,7 +138,24 @@ def main(f_app, mapq_threshold, span_threshold):
                 # reset previous list
                 prev_list = [(chrom, start, qual, iid, l, strand)]
                 prev_id = iid
-
+        # prev_list[0][3] the first mapping read id
+        # prev_list[0][0] the first mapping reference name
+        # prev_list[0][1] the first mapping 1-based mapping begin position
+        # prev_list[1][0] the second mapping reference name
+        # prev_list[1][1] the second mapping 1-based mapping begin position
+        # prev_list[0][5] the first mapping strand
+        # prev_list[1][5] the second mapping strand
+        # prev_list[0][2] the first mapping quality
+        # prev_list[1][2] the second mapping quality
+        # prev_list[0][4] the first mapping continuous segement length
+        # prev_list[1][4] the second mapping continuous segement length
+        # R L represent the chimeric mapping 
+        # 0: the first mapping 1-based mapping begin position < the second mapping 1-based mapping begin position
+        
+        
+        
+        
+        
 
 if __name__ == "__main__":
 

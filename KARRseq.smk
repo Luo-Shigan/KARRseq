@@ -23,7 +23,7 @@ print(SAMPLES)
 def request():
     ##对于能通过依赖关系寻找的中间文件不需要重复定义，否则执行次数会过多
     output = dict()
-    output['star_single_end_ligation'] = expand(outdir + "/chimeric/inner/{genome}/{sample}/{sample}.dedup.pairs.gz",sample=single_samples,genome=['mouse'])
+    output['star_single_end_ligation'] = expand(outdir + "/chimeric/inner/{genome}/{sample}/{sample}.dedup.pairs.gz",sample=SAMPLES,genome=['mouse_transcript'])
     return list(output.values())
 
 rule targets_all:
@@ -190,3 +190,13 @@ rule star_single_end_ligation:
         sleep 60
         pairix {output}
         """
+# 步骤	列顺序（以$1-$10为例）	说明
+# ​原始输入	$1 $2 $3 $4 $5 $6 $7 $8 $9 $10	压缩文件中的原始列。
+# ​第一个awk后	$1 $2 ($3+$10) $4 $5 $6 $7	第3列变为$3+$10，其余列保留。
+# ​第二个awk后	可能交换$2/$4和$3/$5（若条件满足）	确保坐标按升序排列。
+# ​最终输出	排序后的重组列	按染色体和坐标排序的BGZF文件。
+# 如果作用对在同一个reference name（chr/或transcript name）;确保作用对第一个mapping起始位置小于第二个
+# read id, 
+# first reference name,first continous mapping segment end position
+# second reference name,second continous mapping segment begining position, 
+#first strand, second strand

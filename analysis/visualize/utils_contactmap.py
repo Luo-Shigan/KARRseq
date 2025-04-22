@@ -327,11 +327,13 @@ def get_ref(p_genome):
     dict_sizes = {"mm10": proj_dir + "/ChIP_seq_2/Data/index/Mus_musculus/NCBI/GRCm38.p6/mm10refseq_wo_version.fa.fai",
                   "hg19": proj_dir + "/ChIP_seq_2/Data/index/Homo_sapiens/NCBI/GRCh37.p13/hrefseq_wo_version.fa.fai",
                   "GRCm39": proj_dir + "/ChIP_seq_2/Data/index/Mus_musculus/GENCODE/GRCm39/GRCm39.primary_assembly.genome.fa.fai",
-                  "GRCh38": proj_dir + "/ChIP_seq_2/Data/index/Homo_sapiens/GENCODE/GRCh38/GRCh38.primary_assembly.genome.fa.fai"}
+                  "GRCh38": proj_dir + "/ChIP_seq_2/Data/index/Homo_sapiens/GENCODE/GRCh38/GRCh38.primary_assembly.genome.fa.fai",
+                  "GRCm39T": proj_dir + "/ChIP_seq_2/Data/index/Mus_musculus/GENCODE/GRCm39/transcripts.fai"}
     dict_fasta = {"mm10": proj_dir + "/ChIP_seq_2/Data/index/Mus_musculus/NCBI/GRCm38.p6/mm10refseq_wo_version.fa",
                   "hg19": proj_dir + "/ChIP_seq_2/Data/index/Homo_sapiens/NCBI/GRCh37.p13/hrefseq_wo_version.fa",
                   "GRCm39": proj_dir + "/ChIP_seq_2/Data/index/Mus_musculus/GENCODE/GRCm39/GRCm39.primary_assembly.genome.fa",
-                  "GRCh38": proj_dir + "/ChIP_seq_2/Data/index/Homo_sapiens/GENCODE/GRCh38/GRCh38.primary_assembly.genome.fa"}
+                  "GRCh38": proj_dir + "/ChIP_seq_2/Data/index/Homo_sapiens/GENCODE/GRCh38/GRCh38.primary_assembly.genome.fa",
+                  "GRCm39T": proj_dir + "/ChIP_seq_2/Data/index/Mus_musculus/GENCODE/GRCm39/transcripts.fa" }
     try:
         f_size = dict_sizes[p_genome]
         f_fasta = dict_fasta[p_genome]
@@ -410,7 +412,7 @@ def get_contactmap(f_pairs, p_chrom1=None, p_chrom2=None,
                    p_genome=None, f_size=None, f_index=None, p_downsample=1.0,
                    p_point=False, **kwargs):
     """
-    get_contactmap 是一个用于从 Hi-C 交互数据生成接触矩阵 (contact matrix) 的核心函数，主要用于构建基因组交互的热图数据。
+    get_contactmap 是一个用于从交互数据生成接触矩阵 (contact matrix) 的核心函数, 主要用于构建转录本交互的热图数据。
 
     ## 函数功能
     1. 获取基因组区域信息：通过调用 get_loci 确定分析区域
@@ -629,7 +631,8 @@ def add_structure_overlay(ax,
                           p_chrom1, p_start1, p_end1, p_dot_size, p_col, **kwargs):
     """
     功能: 
-    在接触图上添加RNA二级结构叠加,#256baf(蓝色)表示外部结构数据,red表示预测的配对概率\n
+    提供dot文件时 : 在接触图上添加RNA二级结构叠加,#256baf(蓝色)表示外部结构数据,red表示预测的结构数据\n
+    不提供dot : 蓝色表示预测结果数据 
     ​参数: 各种结构相关参数\n
     ​返回值: 更新后的axes对象
     """
@@ -796,7 +799,7 @@ def plot_contactmap(f_pairs, p_chrom1=None, p_chrom2=None,
         - 输出: 支持保存为图片文件或返回Matplotlib对象供进一步调整。
     # 核心参数说明
     1. 输入数据参数
-        - f_pairs: 必选参数，输入文件的路径（如.pairs或.cool格式的Hi-C数据文件)。
+        - f_pairs: 必选参数，输入文件的路径(pari.gz;支持多个文件(重复测序样本))。
         - p_chrom1/p_charm2: 染色体名称（如"chr1"），用于指定查询区域。
         - p_start1/p_end1: 起始和终止位置（坐标范围）。
         - p_gene1/p_gene2: 基因名称 (替代直接坐标,需配合f_index使用)。
@@ -938,7 +941,7 @@ def plot_diffmap(f_pairs, p_chrom1=None, p_chrom2=None,
                  p_downsample=1.0, p_figsize=(4, 4), p_dot_size=5.0, p_point=False,
                  p_label_res=1000, p_dpi=100, p_ax=None, p_verbose=True):
     """
-    plot_diffmap 是一个用于可视化基因组交互差异 (differential genomic interactions) 的函数，主要用于分析 Hi-C 或其他染色质构象捕获数据中的差异交互模式。
+    plot_diffmap 是一个用于可视化基因组交互差异 (differential genomic interactions) 的函数。
     1. 函数功能
         获取基因组区域信息
         加载接触矩阵 (contact map) 数据
@@ -1056,7 +1059,6 @@ def plot_contactmap_w_arcbands(f_pairs, f_cluster, p_chrom1=None, p_chrom2=None,
                                p_downsample=1.0, p_figsize=(4, 4), p_dot_size=5.0, p_point=False,
                                p_label_res=1000, p_dpi=100, p_ax=None, p_verbose=True, p_order=None):
     """
-    这是一个用于可视化基因组接触图（contact map）并带有弧形条带（arcband）注释的函数，主要用于展示Hi-C数据中的染色质交互模式和结构域信息。
     ## 主要功能
     - 绘制基因组接触热图
     - 在热图上方添加弧形条带注释
