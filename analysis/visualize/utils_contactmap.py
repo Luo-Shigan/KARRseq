@@ -210,7 +210,7 @@ def tabulate(data, f_pair, loci, p_start1, p_start2,
     ## ​功能: 从pairix格式文件中统计接触频率\n
     ## 参数:
     - data: 预初始化的零矩阵，用于存储结果
-    - f_pair: pairix 格式的 Hi-C 数据文件路径
+    - f_pair: pairix 格式数据文件路径
     - loci: 查询的基因组区域列表
     - p_start1/2, p_end1/2: 区域起止位置
     - p_chrom1/2: 染色体名称

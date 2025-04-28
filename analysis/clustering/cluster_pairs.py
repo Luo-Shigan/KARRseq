@@ -55,6 +55,7 @@ def overlap_function(i1, i2):
     i2_s1, i2_e1, i2_s2, i2_e2 = i2[1], i2[2], i2[3], i2[4]
 
     def calc_overlap(a_s, a_e, b_s, b_e):
+        # 判断是否重叠，不重叠返回0，重叠返回重叠长度
         if (b_s > a_e) or (a_s > b_e):
             return 0
         else:
@@ -183,25 +184,26 @@ def call_clusters(data, counter, o_bed, o_output,
     txt = [] # 保存聚类的中位坐标信息
     
     G = nx.Graph() # 无向图，用于存储节点和边
-    m = len(data) # 数据中的配对数量
+    m = len(data) # 数据中的相互作用对数量
 
-    fullmat = np.zeros((m, m)) # 存储每对配对的最小片段长度的矩阵
-    simimat = np.zeros((m, m)) # 存储没对配对之间的相似性（重叠量）
+    fullmat = np.zeros((m, m)) # m*m矩阵
+    simimat = np.zeros((m, m)) # m*m矩阵
 
     ### 构建图与计算相似性
     for i in range(len(data)):
-        G.add_node(i) # 添加每个配对为节点
-    # 通过双重循环，计算没对配对之间的相似性（重叠量），调用overlap_function来计算它们的重叠
+        G.add_node(i) # 增加m个节点
+    # 通过双重循环，计算每个节点（相互作用）之间的相似性（重叠量），调用overlap_function来计算它们的重叠
     for i in range(len(data)):
         for j in range(i+1):
             overlap = overlap_function(data[i], data[j])
+            # 最小重叠长度
             simimat[i,j] = min(overlap)
             simimat[j,i] = min(overlap)
-
+            # 最小片段长度 (两个节点，四个片段)
             fullmat[i,j] = min(data[i][5], data[i][6], data[j][5], data[j][6])
             fullmat[j,i] = min(data[i][5], data[i][6], data[j][5], data[j][6])
 
-            # 如果两队配对的重量大于阈值p_overlap，则在图中添加一条边连接这两队配对
+            # 如果两队相互作用最小重叠长度的大于阈值p_overlap，则在图中添加一条边连接这两队配对
             #if overlap > p_overlap:
             if overlap[0] > p_overlap and overlap[1] > p_overlap:
                 G.add_edge(i, j)
@@ -234,7 +236,7 @@ def call_clusters(data, counter, o_bed, o_output,
         # 给当前聚类中的所有节点（配对）打上编号 num，表示它们属于这个聚类。
         labels[c] = num
 
-        # 提取当前聚类中所有配对的相关信息：
+        # 提取当前聚类中所有相互的相关信息：
         # c1：转录本 ID
         # s1 和 e1：片段 1 的起始和结束位置
         # s2 和 e2：片段 2 的起始和结束位置
@@ -244,12 +246,11 @@ def call_clusters(data, counter, o_bed, o_output,
         s2 = [ data[j][3] for j in c ]
         e2 = [ data[j][4] for j in c ]
 
-        # 计算聚类中每个片段的中位坐标（50th percentile）。
+        # 计算聚类中相互作用片段的起始和终止位置的中位坐标（50th percentile）。
         s1_m = np.percentile(s1, 50)
         e1_m = np.percentile(e1, 50)
         s2_m = np.percentile(s2, 50)
         e2_m = np.percentile(e2, 50)
-        span = abs(s2_m - e1_m)
             # 计算变异系数
         def calculate_cv(values):
             mean = np.mean(values)
@@ -305,7 +306,7 @@ def call_clusters(data, counter, o_bed, o_output,
         # write txt
         # =============
         # 生成一个包含中位坐标的文本行，并写入到 o_output 文件中。
-        out_coords = [c1[0], int(s1_m), int(e1_m), c1[0], int(s2_m), int(e2_m),label,cv_s1,cv_e2,cv_s2,cv_e1]
+        out_coords = [c1[0], int(s1_m), int(e1_m), c1[0], int(s2_m), int(e2_m),label]
         txt.append(out_coords)
         if o_output is not None:
             o_output.write("\t".join(map(str, out_coords)) + "\n")
@@ -347,19 +348,15 @@ def cluster_chimeric_pairs(p_iid, p_genome,
                            p_min_interactions, p_max_interactions,
                            f_sizes, f_tsne, f_pairs, f_output, f_bed):
     """
-    主流程函数: 处理输入文件，按转录本分组并调用聚类。
-
-    逻辑:
-
-    - 过滤不符合长度条件 (p_long, p_span) 的配对。
-
-    - 对每个转录本的数据调用call_clusters。
+    主流程函数: 处理输入文件, 对指定转录本进行聚类。
 
     过滤条件:
 
+    - p_iid: 目标转录本ID, all表示不过滤。
+
     - p_long/p_span: 排除过近或跨度过小的配对。
 
-    - p_min/max_interactions: 根据配对数筛选转录本。
+    - p_min/max_interactions: 排除相互作用过。
     """
     results = []
     
@@ -372,7 +369,6 @@ def cluster_chimeric_pairs(p_iid, p_genome,
         o_bed = None
         o_output = None
     
-    current_iid = None # 当前处理转录本ID
     counter = 0 # 聚类编号计数器
     data = [] # 当前转录本所有嵌合对数据
     with gzip.open(f_pairs, "rt") as f:
@@ -381,28 +377,12 @@ def cluster_chimeric_pairs(p_iid, p_genome,
 
             row = line.strip("\r\n").split("\t")
 
-            # 发生相互作用的两个端不是同一个转录本跳过
+            # 只提取转录本内相互作用
             if row[1] != row[3]:
                 continue
-            # all表示不过滤，如果不是特定的目标转录本跳过
-            if row[1] != "all" and row[1] != p_iid:
+            # 只处理指定转录本
+            if row[1] != p_iid:
                 continue
-            
-            if current_iid == None:
-                current_iid = row[1]
-
-            # 如果当前转录本的配对数在合格返回，调用 call_cluster对上一组转录本的数据聚类
-            elif current_iid != row[1]:
-                if (eligible[current_iid] >= p_min_interactions
-                    and eligible[current_iid] <= p_max_interactions):
-                    counter, txt = call_clusters(data, counter, o_bed, o_output,
-                                                 p_overlap, p_min_reads)
-                    results.append(txt)
-                # 清空data,开始收集新的转录本
-                data = []
-                current_iid = row[1]
-
-
             # append these information
             # 记录符合条件的配对数据
             # c1 、c2是转录本ID；s1、s2是起始位置；l1、l2是片段长度；iid是配对ID；strand1、strand2是链方向
@@ -410,15 +390,15 @@ def cluster_chimeric_pairs(p_iid, p_genome,
                                       row[3], int(row[4]), int(row[10]))
             iid, strand1, strand2 = (row[0], row[5], row[6])
 
-            # 如果两个片段太近，跳过
+            # 整个interaction长度不能太小
             if abs(s1-(s2+l2)) < p_long:
                 continue
             
-            # 如果跨度太小，跳过
+            # 发生interaction的两个片段在转录本中不能距离太近
             if abs(s2-(s1+l1)) < p_span:
                 continue
-            
-            # 如果两个片段在同一条链上，统一处理链方向
+
+            # 如果两个片段在同一条链上，统一处理链方向。RNA比对的是+链，与其对应同序DNA是-链
             if strand1 == strand2:
                 if strand1 == "-":
                     strand = "+"
@@ -430,12 +410,11 @@ def cluster_chimeric_pairs(p_iid, p_genome,
     # ===========
     # last call
     # ===========
-    # 检查最后一个 current_iid 是否是合格的转录本（配对数在[min, max]之间）。
 
     # 如果合格，调用 call_clusters 进行聚类，把结果追加到 results。
 
-    if (eligible[current_iid] >= p_min_interactions
-        and eligible[current_iid] <= p_max_interactions):
+    if (eligible[p_iid] >= p_min_interactions
+        and eligible[p_iid] <= p_max_interactions):
         counter, txt = call_clusters(data, counter, o_bed, o_output,
                                      p_overlap, p_min_reads)
         results.append(txt)

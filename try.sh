@@ -139,4 +139,21 @@ function ssel(){
 export -f ssel
 input=output/bam/mouse/SRR13628276/MAPQ1_SPAN0.dedup.txt.gz
 output=output/bam/mouse/SRR13628276/inner/MAPQ1_SPAN0.dedup.pairs_inner.gz
-ssel ${input} ${output}
+# ssel ${input} ${output}
+
+function gtfSpliced(){
+    gtf=$1
+    awk '$3=="exon"' ${gtf} \
+        | awk '{OFS="\t"; print $1, $4-1, $4; print $1, $5-1, $5}' \
+        > exon_boundaries.bed
+    sort -k1,1 -k2,2n exon_boundaries.bed | bedtools merge -i - > known_junctions.bed
+    # single-end
+    bedtools bamtobed -i ${bam} > in.bed
+    # PE
+    bedtools bamtobed -bedpe -i in.bam > in.bedpe
+
+
+
+}
+gtf=/ChIP_seq_2/Data/index/Mus_musculus/GENCODE/GRCm39/gencode.vM36.primary_assembly.annotation.gtf
+gtfSpliced ${gtf}
