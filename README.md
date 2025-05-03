@@ -7,7 +7,7 @@
 举例：
 
 ```shell
-snakemake -s workflow/KARR-seq/KARRseq.smk --use-conda --cores 30 --directory workflow/KARR-seq/ --config indir="../../data/GSE166155" outdir="../../output" 
+snakemake -s workflow/KARR-seq/KARRseq.smk --use-conda --cores 30 --directory workflow/KARR-seq/ --config indir="../../data/GSE166155/fq" outdir="../../output" 
 ```
 
 - --directory指定snakfile所在目录，使得其可以加载同目录下"config/KARRseq.yaml"

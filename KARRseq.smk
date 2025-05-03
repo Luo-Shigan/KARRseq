@@ -9,8 +9,8 @@ from os.path import join
 import re
 
 
-SAMPLESPre = glob_wildcards(indir + "/fq/{sample}.fastq.gz").sample
-paired_samples = glob_wildcards(indir + "/fq/{sample}_1.fastq.gz").sample
+SAMPLESPre = glob_wildcards(indir + "/{sample}.fastq.gz").sample
+paired_samples = glob_wildcards(indir + "/{sample}_1.fastq.gz").sample
 single_samples = [sample for sample in SAMPLESPre if re.match(r"^SRR\d+$", sample)]
 SAMPLES = paired_samples + single_samples
 print(SAMPLES)
@@ -23,7 +23,7 @@ print(SAMPLES)
 def request():
     ##对于能通过依赖关系寻找的中间文件不需要重复定义，否则执行次数会过多
     output = dict()
-    output['star_single_end_ligation'] = expand(outdir + "/chimeric/inner/{genome}/{sample}/{sample}.dedup.pairs.gz",sample=SAMPLES,genome=['mouse_transcript'])
+    output['star_single_end_ligation'] = expand(outdir + "/chimeric/inner/{genome}/{sample}/{sample}.dedup.pairs.gz",sample=SAMPLES,genome=['mm10_transcript'])
     return list(output.values())
 
 rule targets_all:
@@ -41,16 +41,16 @@ rule merge_fastq:
         read1 = indir + "/fq/{sample}_1.fastq.gz",
         read2 = indir + "/fq/{sample}_2.fastq.gz"
     output:
-        read1 = outdir + "/merge/{genome}/{sample}/{sample}_unmerge_1.fastq.gz",
-        read2 = outdir + "/merge/{genome}/{sample}/{sample}_unmerge_2.fastq.gz",
-        read3 = outdir + "/merge/{genome}/{sample}/{sample}_reject_1.fastq.gz",
-        read4 = outdir + "/merge/{genome}/{sample}/{sample}_reject_2.fastq.gz",
-        merge = outdir + "/merge/{genome}/{sample}/{sample}_merge.fastq.gz",
-        report = outdir + "/merge/{genome}/{sample}/{sample}_merge.report"
+        read1 = outdir + "/merge/{sample}/{sample}_unmerge_1.fastq.gz",
+        read2 = outdir + "/merge/{sample}/{sample}_unmerge_2.fastq.gz",
+        read3 = outdir + "/merge/{sample}/{sample}_reject_1.fastq.gz",
+        read4 = outdir + "/merge/{sample}/{sample}_reject_2.fastq.gz",
+        merge = outdir + "/merge/{sample}/{sample}_merge.fastq.gz",
+        report = outdir + "/merge/{sample}/{sample}_merge.report"
     conda:
         config['conda']['KARRseq']
     log:
-        log = outdir + "/log/{genome}/{sample}/merge_fastq.log"
+        log = outdir + "/log/{sample}/merge_fastq.log"
     shell:
         """
 	    SeqPrep \
@@ -66,8 +66,8 @@ rule merge_fastq:
 def get_alignment_input(wildcards):
     """动态判断输入文件类型"""
     # 双端文件需要合并成单端；对于单端文件没必要
-    paired = f"{outdir}/merge/{wildcards.genome}/{wildcards.sample}/{wildcards.sample}_merge.fastq.gz"
-    single = f"{indir}/fq/{wildcards.sample}.fastq.gz"
+    paired = f"{outdir}/merge/{wildcards.sample}/{wildcards.sample}_merge.fastq.gz"
+    single = f"{indir}/{wildcards.sample}.fastq.gz"
     
     # 检查文件实际存在情况
     if wildcards.sample in paired_samples:
